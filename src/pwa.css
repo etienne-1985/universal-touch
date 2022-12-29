@@ -1,0 +1,116 @@
+#statusBar {
+  position: absolute;
+  color: antiquewhite;
+  z-index: 10;
+  width: 100%; 
+  display: flex;
+}
+
+#touchLayer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 100;
+}
+
+.App {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: antiquewhite;
+}
+
+.App a {
+  color: #61dafb;
+}
+
+/* .App-items {
+  text-align: left !important;
+}
+
+.App-header-cust {
+  justify-content: left !important;
+  align-items: unset !important;
+} */
+
+.ThreeApp {
+  height: 100%;
+}
+
+.ThreeApp > canvas {
+  position: absolute;
+}
+
+.ThreeStats {
+  position: fixed;
+  right: 0px;
+  bottom: 0%;
+}
+
+.ThreeStats > div {
+  position: unset !important;
+}
+
+/* 
+.LoadingScreen .logo {
+  height: 40vmin;
+  pointer-events: none;
+} */
+
+@media (prefers-reduced-motion: no-preference) {
+  .LoadingScreen .logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.bottom {
+  margin: 0;
+  position: absolute;
+  bottom: 0%;
+  /* -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+}
+
+.right {
+  margin: 0;
+  position: absolute;
+  /* top: 50%; */
+  right: 2%;
+  /* -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+}
+
+.touchIcons {
+  color: antiquewhite;
+  position: fixed;
+}
+
+.touchBtn {
+  padding: 15px;
+  border: 1px solid bisque;
+  border-radius: 50%;
+}
+
+body {
+  user-select: none;
+}

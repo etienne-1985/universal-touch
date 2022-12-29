@@ -1,0 +1,27 @@
+{
+  "name": "pwa-base",
+  "version": "1.0.0",
+  "source": "src/index.ts",
+  "module": "dist/module.js",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.2",
+    "@fortawesome/free-regular-svg-icons": "^6.1.2",
+    "@fortawesome/free-solid-svg-icons": "^6.1.2",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "parcel": "^2.8.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@parcel/packager-raw-url": "2.8.2",
+    "@parcel/transformer-webmanifest": "2.8.2",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "process": "^0.11.10"
+  },
+  "peerDependencies": {}
+}

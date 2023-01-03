@@ -2,21 +2,76 @@ import React, { useCallback, useEffect, useState, useRef } from "react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { toggleFullScreen } from "../utils/misc"
 import { faCircle, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons'
-import { TouchJoystick as TouchJoystickControl } from "../controls/Joystick"
+import { TouchJoystick, TouchJoystick as TouchJoystickControl } from "../controls/Joystick"
 import '../pwa.css'
 import "./slider.css"
 
-const TouchJoystick = ({ joystick, style, show = true }) => {
+const joySize = 128
+const stickSize = 40
+
+const TouchJoystick = ({ joystick, style, show = true, dbg = false }) => {
+    const ref = useRef()
+    const [refresh, setRefresh] = useState(false);
+
+    const onTouchStart = (e: any) => {
+        joystick.onTouchStart(e)
+        show && setRefresh(!refresh)
+    }
+
+    const onTouchMove = (e: any) => {
+        joystick.onTouchMove(e)
+        show && setRefresh(!refresh)
+    }
+
+    const onTouchEnd = (e: any) => {
+        joystick.onTouchEnd(e)
+        show && setRefresh(!refresh)
+    }
+
+    const coords2percent = (coord) => 100 * (coord + 128) / 256
+    const offset = {
+        left: coords2percent(joystick.x - stickSize) + "%",
+        bottom: coords2percent(joystick.y - stickSize) + "%"
+    }
+    let { posX: left, posY: top } = joystick.state.origin || {}
+    left -= joySize / 2
+    top -= joySize / 2
+
     return (<>
-        <div style={{ ...style }}
-            onTouchStart={joystick.onTouchStart}
-            onTouchMove={joystick.onTouchMove}
-            onTouchEnd={joystick.onTouchEnd} />
-        {show && <FontAwesomeIcon
-            className="touchIcons"
-            icon={faCircle} size={"3x"}
-            style={{ left: joystick.x, top: joystick.y }} />}
+        <div ref={ref} style={{ ...style }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd} >
+            {show && joystick.state.origin && <div style={{ left, top, position: 'absolute' }}>
+                <div style={{ position: 'relative', width: '128px', height: '128px', border: '1px solid black' }}>
+                    <FontAwesomeIcon icon={faCircle} size={"3x"} style={{ position: 'absolute', left: offset.left, bottom: offset.bottom }} />
+                </div>
+                <span>#{joystick.state.touchId}</span>
+            </div>}
+            {dbg && <span> DBG </span>}
+        </div>
+
     </>)
+}
+
+export const DebugOverlay = () => {
+    const ref = useRef()
+    const [refresh, setRefresh] = useState(false);
+
+    useEffect(() => {
+        setRefresh(!refresh)
+    }, [])
+
+    const w = ref.current?.clientWidth
+    const h = ref.current?.clientHeight
+
+    return (
+        <div ref={ref} id={"dbgOverlay"} style={{ display: 'flex', outline: '5px solid red', outlineOffset: "-5px" }}>
+            <span style={{ left: "0%", top: "0%", position: 'absolute', margin: '10px' }}>{0}</span>
+            <span style={{ right: "0%", top: "0%", position: 'absolute', margin: '10px' }}>{w}</span>
+            <span style={{ left: "0%", bottom: "0%", position: 'absolute', margin: '10px' }}>{h}</span>
+            <span style={{ right: "0%", bottom: "0%", position: 'absolute', margin: '10px' }}>{w}x{h}</span>
+        </div>)
 }
 
 /**
@@ -26,8 +81,9 @@ const TouchJoystick = ({ joystick, style, show = true }) => {
  * @param param0 
  * @returns 
  */
-export const TouchControlLayer = ({ showBtn = true }) => {
+export const TouchControls = ({ showBtn = true, dbg = true }) => {
     const [refresh, setRefresh] = useState(false);
+
 
     const onTouchStart = (e: any) => {
         TouchJoystickControl.onTouchStart(e)
@@ -52,11 +108,11 @@ export const TouchControlLayer = ({ showBtn = true }) => {
         const { x: dx, y: dy } = normDiff(touch.diff)
         return (<div style={{ position: "fixed", top: `${y}px`, left: `${x}px`, color }}>{side} dx: {dx} dy: {dy}</div>)
       })} */}
-        <div id={"touchLayer"} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchMove={onTouchMove} />
-        {/* <div id={"touchLayer"} style={{ display: 'flex' }}>
+        {/* <div id={"touchLayer"} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchMove={onTouchMove} /> */}
+        <div id={"touchOverlay"} style={{ display: 'flex' }}>
             <TouchJoystick style={{ height: "100%", width: "50%" }} joystick={TouchJoystickControl.left} />
             <TouchJoystick style={{ height: "100%", width: "50%" }} joystick={TouchJoystickControl.right} />
-        </div> */}
+        </div>
     </>)
 }
 

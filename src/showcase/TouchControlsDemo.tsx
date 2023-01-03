@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { FullscreenToggleBtn, TouchControlLayer } from "../gui/TouchControls";
+import { DebugOverlay, FullscreenToggleBtn, TouchControls } from "../gui/TouchControls";
 
 enum TOUCH_BTN_ACTIONS {
     Jump,
@@ -59,7 +59,8 @@ export const TouchControlsDemo = ({ customRouteName }) => {
             <div >2</div>
             <div >3</div>
         </div> */}
-        <TouchControlLayer showBtn/>
+        <DebugOverlay />
+        <TouchControls showBtn />
         {/* <TouchJoysticks /> */}
         <FullscreenToggleBtn />
     </>);

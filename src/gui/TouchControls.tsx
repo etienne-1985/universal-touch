@@ -2,29 +2,34 @@ import React, { useCallback, useEffect, useState, useRef } from "react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { toggleFullScreen } from "../utils/misc"
 import { faCircle, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons'
-import { TouchJoystick, TouchJoystick as TouchJoystickControl } from "../controls/Joystick"
+import { TouchJoystick as TouchJoystickControl } from "../controls/Joystick"
+import { TouchControls as Controls } from "../controls/Controls"
+import { TouchButton as ButtonControl } from "../controls/Button"
 import '../pwa.css'
 import "./slider.css"
 
 const joySize = 128
 const stickSize = 40
+const JOY_TYPES = ["L", "R"]
 
 const TouchJoystick = ({ joystick, style, show = true, dbg = false }) => {
     const ref = useRef()
     const [refresh, setRefresh] = useState(false);
 
+    const joyType = joystick.type
+
     const onTouchStart = (e: any) => {
-        joystick.onTouchStart(e)
+        // joystick.onTouchStart(e)
         show && setRefresh(!refresh)
     }
 
     const onTouchMove = (e: any) => {
-        joystick.onTouchMove(e)
+        // joystick.onTouchMove(e)
         show && setRefresh(!refresh)
     }
 
     const onTouchEnd = (e: any) => {
-        joystick.onTouchEnd(e)
+        // joystick.onTouchEnd(e)
         show && setRefresh(!refresh)
     }
 
@@ -33,24 +38,24 @@ const TouchJoystick = ({ joystick, style, show = true, dbg = false }) => {
         left: coords2percent(joystick.x - stickSize) + "%",
         bottom: coords2percent(joystick.y - stickSize) + "%"
     }
-    let { posX: left, posY: top } = joystick.state.origin || {}
+    let { x: left, y: top } = joystick.touchState.origin || {}
     left -= joySize / 2
     top -= joySize / 2
-
+    console.log(`joy ${JOY_TYPES[joyType]} left: ${left} top:${top}`)
+    const display = show && joystick.touchState.origin && !isNaN(left) && !isNaN(top)
     return (<>
         <div ref={ref} style={{ ...style }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd} >
-            {show && joystick.state.origin && <div style={{ left, top, position: 'absolute' }}>
+            {display && <div style={{ left, top, position: 'absolute' }}>
                 <div style={{ position: 'relative', width: '128px', height: '128px', border: '1px solid black' }}>
                     <FontAwesomeIcon icon={faCircle} size={"3x"} style={{ position: 'absolute', left: offset.left, bottom: offset.bottom }} />
                 </div>
-                <span>#{joystick.state.touchId}</span>
+                <span>#{JOY_TYPES[joyType]}</span>
             </div>}
             {dbg && <span> DBG </span>}
         </div>
-
     </>)
 }
 
@@ -108,10 +113,11 @@ export const TouchControls = ({ showBtn = true, dbg = true }) => {
         const { x: dx, y: dy } = normDiff(touch.diff)
         return (<div style={{ position: "fixed", top: `${y}px`, left: `${x}px`, color }}>{side} dx: {dx} dy: {dy}</div>)
       })} */}
-        {/* <div id={"touchLayer"} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchMove={onTouchMove} /> */}
-        <div id={"touchOverlay"} style={{ display: 'flex' }}>
+        <div id={"touchOverlay"} style={{ display: 'flex' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchMove={onTouchMove}>
+            {/* <div id={"touchOverlay"} style={{ display: 'flex' }}> */}
             <TouchJoystick style={{ height: "100%", width: "50%" }} joystick={TouchJoystickControl.left} />
             <TouchJoystick style={{ height: "100%", width: "50%" }} joystick={TouchJoystickControl.right} />
+            {Object.values(Controls.instances).filter(val=>val instanceof TouchButton)}
         </div>
     </>)
 }
@@ -197,6 +203,6 @@ export const FullscreenToggleBtn = () => {
     // const [fullScreenMode, setFullScreenMode] = useState(false);
 
     return (
-        <ToggleBtn icon={faCompress} disableIcon={faExpand} style={{ bottom: "5%", right: "4%" }} toggleBtnAction={toggleFullScreen} />
+        <ToggleBtn icon={faCompress} disableIcon={faExpand} style={{ bottom: "5%", right: "4%", position: "absolute", zIndex: 2000 }} toggleBtnAction={toggleFullScreen} />
     )
 }

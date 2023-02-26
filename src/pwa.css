@@ -28,7 +28,9 @@ body {
 }
 
 .touchBtn {
+  position: absolute;
   padding: 15px;
   border: 1px solid bisque;
   border-radius: 50%;
+  z-index: 2000;
 }

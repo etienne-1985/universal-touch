@@ -1,6 +1,6 @@
 export class TouchControls {
     static instances: any = {}
-    type
+    uid
     onValueChange
     state
     anchor
@@ -8,11 +8,16 @@ export class TouchControls {
     /**
      * onValueChange: optional callback notifying value change
      */
-    constructor(type, onValueChange?) {
-        console.log(`[TouchControls] create instance #${type}`)
-        this.type = type
+    constructor(uid, onValueChange?) {
+        console.log(`[TouchControls] create instance #${uid}`)
+        this.uid = uid
         this.onValueChange = onValueChange
-        TouchControls.instances[type] = this
+        TouchControls.instances[uid] = this
+    }
+
+    onTouch = (touchState, touchEvtType) => {
+        // console.log(eventType)
+        // this.value = value
     }
 
     get value() {
@@ -25,19 +30,41 @@ export class TouchControls {
     }
 }
 
+export enum BTN_TYPE {
+    NONE,
+    TOGGLE
+}
+
 export class ButtonControl extends TouchControls {
-    static instanciate(btnType, btnConfig?) {
-        if (!TouchControls.instances[btnType]) {
-            console.log(`[TouchButtonControl - instanciate] create new button instance ${btnType}`)
-            return new ButtonControl(btnType, btnConfig)
+    type = BTN_TYPE.NONE
+
+    static instanciate(controlUid, btnConfig?) {
+        if (!TouchControls.instances[controlUid]) {
+            console.log(`[TouchButtonControl - instanciate] create new button control`)
+            return new ButtonControl(controlUid, btnConfig)
         } else {
-            console.warn(`[TouchButtonControl - instanciate] instance ${btnType} already exist `)
+            console.warn(`[TouchButtonControl - instanciate] instance ${controlUid} already exist `)
+        }
+    }
+
+    onTouch = (value, touchEvtType) => {
+        switch (touchEvtType) {
+            case 'touchstart':
+                if (this.type !== BTN_TYPE.TOGGLE) {
+                    this.value = value
+                }
+                break;
+            case 'touchmove':
+                break;
+            case 'touchend':
+                this.value = this.type !== BTN_TYPE.TOGGLE ? value : !this.value
+                break;
         }
     }
 
     constructor(controlUid, config) {
         super(controlUid, config?.actionBinding)
-        console.log(config)
+        this.type = config?.type ? config?.type : BTN_TYPE.NONE
     }
 }
 
@@ -94,7 +121,7 @@ export class JoystickControl extends TouchControls {
 
     static instanciate(joyType, joyConfig) {
         if (!TouchControls.instances[joyType]) {
-            console.log(`[TouchButtonControl - instanciate] create new button instance ${joyType}`)
+            console.log(`[TouchButtonControl - instanciate] create new joystick control`)
             return new JoystickControl(joyType, joyConfig)
         } else {
             console.warn(`[TouchButtonControl - instanciate] instance ${joyType} already exist `)
@@ -214,6 +241,17 @@ export class JoystickControl extends TouchControls {
         super(controlUid)
         this.value = { x: 0, y: 0 }
         this.isInTouchRange = (x, y) => config.onScreenRange(x, y)
+    }
+
+    onTouch = (touchState, touchEvtType) => {
+        switch (touchEvtType) {
+            case 'touchstart':
+                break;
+            case 'touchmove':
+                break;
+            case 'touchend':
+                break;
+        }
     }
 
     onTouchStart = ({ x, y }) => {

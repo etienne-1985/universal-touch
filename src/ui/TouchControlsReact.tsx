@@ -54,19 +54,19 @@ export const TouchControlsReactOverlay = ({ touchConfig }) => {
                 .filter(control => control instanceof JoystickControl)
                 .map((joyControl: any) =>
                     <TouchJoystick
-                        key={'touchJoy_' + joyControl.type}
+                        key={'touchJoy_' + joyControl.uid}
                         style={{ height: "100%", width: "50%" }}
                         joyControl={joyControl}
-                        joyConfig={touchConfig[joyControl.type]} />
+                        joyConfig={touchConfig[joyControl.uid]} />
                 )
             }
             {Object.values(TouchControls.instances)
                 .filter(control => control instanceof ButtonControl)
                 .map((btnControl: any) =>
                     <TouchButton
-                        key={'touchBtn_' + btnControl.type}
+                        key={'touchBtn_' + btnControl.uid}
                         btnControl={btnControl}
-                        btnConfig={touchConfig[btnControl.type]} />
+                        btnConfig={touchConfig[btnControl.uid]} />
                 )
             }
         </div>
@@ -85,10 +85,12 @@ const TouchButton = ({ btnControl, btnConfig }) => {
     // }, [btnPressed])
 
     const onTouchEvent = (evt, val?) => {
-        evt.stopPropagation()
+        // TODO support disabling joy while touching button
+        // evt.stopPropagation()
         if (val !== undefined) {
             // forward value to button control instance
-            btnControl.value = val
+            // btnControl.value = val
+            btnControl.onTouch(val, evt.type)
             // refresh UI to reflect changes
             setRefresh(!refresh)
         }
@@ -143,7 +145,7 @@ const TouchJoystick = ({ joyControl, joyConfig, style, show = true, dbg = false 
             onTouchEnd={onTouchEnd} >
             {display && <div style={{ left, top, position: 'absolute' }}>
                 <div style={{ position: 'relative', width: '128px', height: '128px', border: '1px solid black' }}>
-                    <FontAwesomeIcon icon={faCircle} size={"3x"} style={{ position: 'absolute', left: offset.left, bottom: offset.bottom }} />
+                    <FontAwesomeIcon  icon={faCircle} size={"3x"} style={{ position: 'absolute', left: offset.left, bottom: offset.bottom }} />
                 </div>
                 <span>#{joyConfig.label}</span>
             </div>}

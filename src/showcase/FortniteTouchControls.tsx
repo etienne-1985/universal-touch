@@ -5,18 +5,16 @@
 import React, { useEffect } from "react";
 import { DebugOverlay, TouchControlsReactOverlay } from "../ui/TouchControlsReact";
 import { faCircleUp, faFire } from '@fortawesome/free-solid-svg-icons'
-import { faCircle, faCompress, faExpand } from '@fortawesome/free-solid-svg-icons'
-import { ButtonControl, JoystickControl } from "../controls/TouchControls";
-import { toggleFullScreen } from "../utils/misc";
+import {  ButtonControl, JoystickControl } from "../controls/TouchControls";
+import { ControlPresets } from "../controls/ControlPresets";
 
-const halfScreenWidth = window.innerWidth / 2
 
 /**
  * Touch UI example to demo joysticks and buttons controls
  * (inspired from Fortnite mobile version) ,
  * and show how to setup UI configuration + touch bindings
  */
-export const FortniteTouchControls = ({ customRouteName }) => {
+export const FortniteTouchControlsDemo = ({ customRouteName }) => {
 
     enum TouchControlsTypes {
         BTN_FS_MODE,
@@ -31,23 +29,16 @@ export const FortniteTouchControls = ({ customRouteName }) => {
         // Controls configuration
         const ConfigMapping = {}
         // Controls enum def 
-        ConfigMapping[TouchControlsTypes.JOY_LEFT] = {
-            label: "L",
-            onScreenRange: (x, y) => (x < halfScreenWidth)
-        }
-        ConfigMapping[TouchControlsTypes.JOY_RIGHT] = {
-            label: "R",
-            onScreenRange: (x, y) => (x > halfScreenWidth)
-        }
+        ConfigMapping[TouchControlsTypes.JOY_LEFT] = ControlPresets.JOY_L
+        ConfigMapping[TouchControlsTypes.JOY_RIGHT] = ControlPresets.JOY_R
         ConfigMapping[TouchControlsTypes.BTN_FS_MODE] = {
-            icon: faExpand,
+            ...ControlPresets.TOGGLE_FS_MODE,
             style: { top: "3%", right: "3%" },
-            size: 1,
-            actionBinding: (val) => toggleFullScreen(val)
+            size: 1
         }
         ConfigMapping[TouchControlsTypes.BTN_JUMP] = {
             icon: faCircleUp,
-            style: { bottom: "35%", right: "15%" }
+            style: { bottom: "32%", right: "14%" }
         }
         ConfigMapping[TouchControlsTypes.BTN_FIRE] = {
             icon: faFire,

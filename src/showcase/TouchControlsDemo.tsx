@@ -3,10 +3,11 @@
  */
 
 import React, { useEffect } from "react";
-import { DebugOverlay, TouchControlsReactOverlay } from "../ui/TouchControlsReact";
+import { TouchControlsReactOverlay } from "../ui/TouchControlsReact";
 import { faCircleUp, faFire } from '@fortawesome/free-solid-svg-icons'
 import {  ButtonControl, JoystickControl } from "../controls/TouchControls";
 import { ControlPresets } from "../controls/ControlPresets";
+import { DebugOverlay } from "../ui/misc";
 
 
 /**
@@ -14,8 +15,8 @@ import { ControlPresets } from "../controls/ControlPresets";
  * (inspired from Fortnite mobile version) ,
  * and show how to setup UI configuration + touch bindings
  */
-export const FortniteTouchControlsDemo = ({ customRouteName }) => {
-
+export const MobileGameControlsDemo = ({ customRouteName }) => {
+    // defines touch controls as enum so they get unique id
     enum TouchControlsTypes {
         BTN_FS_MODE,
         JOY_LEFT,
@@ -42,14 +43,14 @@ export const FortniteTouchControlsDemo = ({ customRouteName }) => {
         }
         ConfigMapping[TouchControlsTypes.BTN_FIRE] = {
             icon: faFire,
-            style: { bottom: "12%", right: "8%" }
+            style: { bottom: "12%", right: "8%" },
         }
         return ConfigMapping
     }
 
 
     useEffect(() => {
-        // instanciate joy
+        // instanciate joy controls
         JoystickControl.instanciate(TouchControlsTypes.JOY_LEFT, controlsCfg[TouchControlsTypes.JOY_LEFT])
         JoystickControl.instanciate(TouchControlsTypes.JOY_RIGHT, controlsCfg[TouchControlsTypes.JOY_RIGHT])
         // instanciate btn controls

@@ -2,6 +2,9 @@ import { faExpand } from "@fortawesome/free-solid-svg-icons"
 import { halfScreenWidth, toggleFullScreen } from "../utils/misc"
 import { BTN_TYPE } from "./TouchControls"
 
+/**
+ * Preconfigured controls
+ */
 export const ControlPresets = {
     TOGGLE_FS_MODE: {
         type: BTN_TYPE.TOGGLE,

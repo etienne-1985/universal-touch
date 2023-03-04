@@ -1,9 +1,9 @@
-import { FortniteTouchControls } from "./showcase/FortniteTouchControls";
+import { MobileGameControlsDemo } from "./showcase/TouchControlsDemo";
 
 
 export function App() {
   return <>
     {/* <h1>PWA lib</h1> */}
-    <FortniteTouchControls customRouteName='' />
+    <MobileGameControlsDemo customRouteName='' />
   </>;
 }

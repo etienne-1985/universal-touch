@@ -1,3 +1,7 @@
+/**
+ * Common base class
+ */
+
 export class TouchControls {
     static instances: any = {}
     uid
@@ -81,21 +85,9 @@ const normDiff = (v) => {
 /**
  * TouchEvent Lifecycle 
  * 
- * @touchstart: new id is assigned, previous ids are kept
+ * @touchstart: a new id is assigned, existing ids are kept
  * @touchmove: 
- * @touchend: an id is removed, all previous ids are reassigned
- * 
- * touchEvent {     // Native JS object
- *  identifier,     // assigned @touchstart, removed or updated @touchend, same during lifecyle
- *  pageX,
- *  pageY
- * }
- * 
- * touchState {
- *  id:             // native identifer for touch event (valid until touch end event)
- *  origin: {x,y}   // original value when touch was first pressed
- *  current: {x, y} // last value
- * }
+ * @touchend: an id is removed, all existing ids are reassigned
  * 
  * joystick {
  *  touchState      // set while touch is active, reassigned @touchstart or @touchend
@@ -103,17 +95,29 @@ const normDiff = (v) => {
  *  needReset,      // inform joystick has been released and need reset
  *  autoRest        // automatically reset value to 0 on release
  * }
- * 
- * 
  *  
  */
 
+// Native JS object
+ interface TouchEvent {     
+   identifier,     // assigned @touchstart, removed or updated @touchend, same during lifecyle
+   pageX,
+   pageY
+  }
+
+// internal touch state
+ interface TouchState {
+  id,            // native identifer for touch event (valid until touch end event)
+  origin: {x,y},   // original value when touch was first pressed
+  current: {x, y} // last value
+ }
+
 export class JoystickControl extends TouchControls {
     static active: any = []
-    /** Temporary mapping between touch ids and joy instances: only reliable during @touchMove **/
+    // Temporary mapping between touch ids and instances: only reliable during @touchMove 
     static activeTouchMapping: any = {}
     // storing touch info per instance
-    touchState: any = {}
+    touchState: TouchState = {}
     // computed joystick value = current - origin touch pos
     needReset = false
     autoReset = false
@@ -129,17 +133,15 @@ export class JoystickControl extends TouchControls {
     }
 
     /**
-     * Joysticks can be identified by:
-     * - touchRange with getMatching @touchstart 
+     * Depending on touch event phase, joysticks can be identified by:
+     * - touchRange with findByTouchRange @touchstart 
      * - touchId with activeTouchMapping[touchId] during @touchmove
-     * - lastValue @touchend
+     * - lastValue with findByValue @touchend
      */
     static getMatching = (touch) => {
-        // exact match with origin or match by touchrange
-        const joyMatch = Object.values(TouchControls.instances)
-            .filter(inst => inst instanceof JoystickControl)
-            .find((joy: JoystickControl) => joy.matchByTouchRange(touch.origin))
-        return joyMatch
+        return JoystickControl.activeTouchMapping[touch.id] || 
+        JoystickControl.findByValue(touch) ||
+        JoystickControl.findByTouchRange(touch)
     }
 
     static findByTouchRange = (firstValue) => {
@@ -160,25 +162,19 @@ export class JoystickControl extends TouchControls {
      * add new touch mapping to existing
      */
     static onTouchStart(e) {
-        Object.values(e.touches).forEach((touchEvt: any) => {
+        Object.values(e.touches).forEach((touchEvt: TouchEvent) => {
             const touchId = touchEvt.identifier
-            // if doesn't exist or is inactive
-            // if (!touch || !touch.active) {
-            //     // create or reinit touch
-
-            // }
             if (!JoystickControl.activeTouchMapping[touchId]) {
                 // create new touch state, 
-                const origin = { x: touchEvt.pageX, y: touchEvt.pageY }
-                // const current = { x: touchEvt.pageX, y: touchEvt.pageY }
-                // const touchState = { origin, current, active: true }
-                //find matching joystick and 
-                const joyMatch: JoystickControl = JoystickControl.findByTouchRange(origin)
+                const firstValue = { x: touchEvt.pageX, y: touchEvt.pageY }
+                //find matching joystick and assign to active controls 
+                const joyMatch: JoystickControl = JoystickControl.findByTouchRange(firstValue)
                 if (joyMatch) {
-                    joyMatch.onTouchStart(origin)
+                    joyMatch.enable(firstValue)
                     // add mapping
                     JoystickControl.activeTouchMapping[touchId] = joyMatch
-                    console.log(`assign touch id ${touchId} to touchState`)
+                } else {
+                    console.log(`no joystick matched touch id ${touchId}`)
                 }
             }
         })
@@ -190,8 +186,9 @@ export class JoystickControl extends TouchControls {
     static onTouchMove(e) {
         // update touches instant values
         Object.values(e.touches).forEach((touchEvt: any) => {
-            const current = { x: touchEvt.pageX, y: touchEvt.pageY }
-            JoystickControl.activeTouchMapping[touchEvt.identifier].onTouchMove(current)
+            const touchId = touchEvt.identifier
+            const currentValue = { x: touchEvt.pageX, y: touchEvt.pageY }
+            JoystickControl.activeTouchMapping[touchId].update(currentValue)
         })
     }
 
@@ -211,30 +208,11 @@ export class JoystickControl extends TouchControls {
                 })
                 // inactive joy
                 if (!matchEvt) {
-                    (joy as JoystickControl).onTouchEnd()
-                    // unregister from active joysticks
+                    (joy as JoystickControl).disable()
+                    // remove from active index
                     delete JoystickControl.activeTouchMapping[touchId]
                 }
             })
-    }
-
-    static addToActive(active) {
-        // add instance to active 
-        JoystickControl.active.push(active)
-    }
-
-    static removeFromActive(inactive) {
-        JoystickControl.active = JoystickControl.active.filter(inst => inst.type !== inactive.type)
-        // and inform all active instances about id change
-        JoystickControl.active
-            //     .forEach(inst => inst.refresh())
-            // .filter(inst => (inst as JoystickControl).state.touchId !== undefined)
-            .forEach((inst, index) => inst.state.touchId = index)
-    }
-
-    static refresh(e) {
-        JoystickControl.active
-            .forEach(inst => inst.refresh(e))
     }
 
     constructor(controlUid, config) {
@@ -254,7 +232,8 @@ export class JoystickControl extends TouchControls {
         }
     }
 
-    onTouchStart = ({ x, y }) => {
+    // called @onTouchStart event
+    enable = ({ x, y }) => {
         // Object.values(e.touches).forEach((touchEvt: any) => {
         // const touchId = touchEvt.identifier
         // find a previous touch
@@ -274,7 +253,8 @@ export class JoystickControl extends TouchControls {
         // })
     }
 
-    onTouchMove = ({ x, y }) => {
+    // called during @touchMove
+    update = ({ x, y }) => {
         const { current, origin } = this.touchState
         // update touch instant values
         current.x = x
@@ -287,7 +267,8 @@ export class JoystickControl extends TouchControls {
         // console.log(`[JOY-${this.type}] x: ${this.x}, y: ${this.y}`)
     }
 
-    onTouchEnd = () => {
+    // called @touchEnd
+    disable = () => {
         // TouchJoystick.removeFromActive(this)
         // TouchJoystick.refresh(e)
         this.touchState = {} // reset state

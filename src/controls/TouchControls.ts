@@ -193,8 +193,8 @@ export class JoystickControl extends TouchControls {
     }
 
     /**
-     * activeTouchMapping no longer valid, need to
-     * - remove inactive touch
+     * activeTouchMapping previous IDs are no longer reliable:
+     * - clean inactive touch
      * - reassign currently active touch ids
      */
     static onTouchEnd(e) {
